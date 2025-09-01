@@ -18,12 +18,14 @@ export interface AdaptedAnimeCard {
   poster?: string;
 }
 
-interface RawAnimeItemUnsafe { [k: string]: any }
+// Generic loose record without using 'any'.
+// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
+interface RawAnimeItemUnsafe { [k: string]: unknown }
 
 function extractYear(item: RawAnimeItemUnsafe): number | undefined {
-  const dateStr = item.aired_on || item.released_on;
-  if (!dateStr) return undefined;
-  const d = new Date(dateStr);
+  const candidate = (item as Record<string, unknown>).aired_on ?? (item as Record<string, unknown>).released_on;
+  if (typeof candidate !== 'string' || candidate.length < 4) return undefined;
+  const d = new Date(candidate);
   const y = d.getFullYear();
   return Number.isNaN(y) ? undefined : y;
 }
@@ -57,6 +59,10 @@ export async function fetchAnimeList(limit = 30, page = 1): Promise<{ total: num
   const data = await apiFetch<GetAnimeListResponse>(`/anime/get-anime-list?page=${page}&limit=${limit}`);
   if (!isRecord(data)) return { total: 0, items: [] };
   const total = typeof data.total_count === 'number' ? data.total_count : 0;
-  const listRaw = isArray((data as any).anime_list) ? (data as any).anime_list as RawAnimeItemUnsafe[] : [];
+  // Access unknown field safely
+  const possibleList = (data as Record<string, unknown>)['anime_list'];
+  const listRaw: RawAnimeItemUnsafe[] = isArray(possibleList)
+    ? (possibleList as unknown[]).filter(isRecord) as RawAnimeItemUnsafe[]
+    : [];
   return { total, items: adaptAnimeList(listRaw) };
 }
