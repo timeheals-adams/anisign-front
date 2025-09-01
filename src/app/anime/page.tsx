@@ -4,10 +4,18 @@ import { AnimeGrid } from '@/features/anime/components/AnimeGrid';
 import { mockAnime } from '@/features/anime/data/mockAnime';
 import { AnimeFiltersBar } from '@/features/anime/components/AnimeFiltersBar';
 import { AnimeSortBlock } from '@/features/anime/components/AnimeSortBlock';
+import { fetchAnimeList } from '@/features/anime/api/animeService';
 
 export const revalidate = 300; // пример публичного кеша
 
-export default function AnimeListPage() {
+export default async function AnimeListPage() {
+  let anime = mockAnime;
+  try {
+    const { items } = await fetchAnimeList(60, 1);
+    if (items.length) anime = items;
+  } catch {
+    // fallback already set
+  }
   return (
     <main className="mx-auto w-full max-w-[1650px] px-5 py-10">
       <div className="flex flex-col gap-10 lg:flex-row lg:items-start lg:gap-[40px]">
@@ -17,7 +25,7 @@ export default function AnimeListPage() {
             <AnimeFiltersBar />
           </div>
           {/* Сетка */}
-          <AnimeGrid items={mockAnime} />
+          <AnimeGrid items={anime} />
         </div>
         {/* Боковая панель */}
         <div className="shrink-0 w-full max-w-[288px]">
