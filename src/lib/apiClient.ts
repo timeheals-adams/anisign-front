@@ -30,7 +30,10 @@ export async function apiFetch<T>(path: string, options: FetchOptions = {}): Pro
   if (!res.ok) {
     let body: unknown = null;
     try { body = await res.json(); } catch { /* ignore */ }
-    throw new ApiError((body as any)?.message || res.statusText, res.status, body);
+    const message = typeof body === 'object' && body !== null && 'message' in (body as Record<string, unknown>)
+      ? String((body as Record<string, unknown>).message)
+      : res.statusText;
+    throw new ApiError(message, res.status, body);
   }
   return res.json() as Promise<T>;
 }

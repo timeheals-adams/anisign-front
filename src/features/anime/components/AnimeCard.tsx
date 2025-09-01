@@ -38,6 +38,13 @@ export function AnimeCard({ id, title, year, kind, score, poster, href }: AnimeC
                 className="opacity-100 !transition size-full object-cover"
               />
             )}
+            {typeof score === 'number' && (
+              <div className="absolute top-2 right-2 flex flex-col gap-1.5 items-end z-10">
+                <div className="bg-black/70 backdrop-blur rounded-full h-7 px-3 flex items-center justify-center">
+                  <span className="text-white/80 text-xs font-medium">{score.toFixed(1)}</span>
+                </div>
+              </div>
+            )}
           </Link>
         </div>
       </div>
