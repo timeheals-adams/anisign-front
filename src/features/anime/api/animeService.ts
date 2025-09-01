@@ -1,22 +1,13 @@
 import { apiFetch } from '@/lib/apiClient';
+import type { paths } from '@/lib/openapi/schema';
 
-// Raw API response shapes (simplified) based on provided sample
-export interface RawAnimeItem {
-  anime_id: string; // numeric string id
-  id: string; // uuid
-  english?: string | null;
-  russian?: string | null;
-  kind?: string | null; // e.g. 'ona'
-  score?: number | null;
-  poster_url?: string | null;
-  aired_on?: string | null; // ISO date
-  released_on?: string | null; // ISO date
-}
+// Derive raw response type from OpenAPI (still 'unknown' content, so we'll assert shape)
+type GetAnimeListOperation = paths['/anime/get-anime-list']['get'];
+type GetAnimeListResponse = GetAnimeListOperation['responses']['200']['content']['application/json'];
 
-interface RawAnimeListResponse {
-  total_count: number;
-  anime_list: RawAnimeItem[];
-}
+// Runtime narrowing helper (defensive) – we trust backend but keep a guard.
+function isRecord(v: unknown): v is Record<string, unknown> { return typeof v === 'object' && v !== null; }
+function isArray(v: unknown): v is unknown[] { return Array.isArray(v); }
 
 export interface AdaptedAnimeCard {
   id: string; // use anime_id
@@ -27,7 +18,9 @@ export interface AdaptedAnimeCard {
   poster?: string;
 }
 
-function extractYear(item: RawAnimeItem): number | undefined {
+interface RawAnimeItemUnsafe { [k: string]: any }
+
+function extractYear(item: RawAnimeItemUnsafe): number | undefined {
   const dateStr = item.aired_on || item.released_on;
   if (!dateStr) return undefined;
   const d = new Date(dateStr);
@@ -46,21 +39,24 @@ function normalizeKind(kind?: string | null): string | undefined {
   }
 }
 
-export function adaptAnimeList(raw: RawAnimeItem[]): AdaptedAnimeCard[] {
-  return raw.map(item => ({
-    id: item.anime_id || item.id,
-    title: item.russian || item.english || 'Без названия',
-    year: extractYear(item),
-    kind: normalizeKind(item.kind || undefined),
-    score: typeof item.score === 'number' ? Number(item.score.toFixed(2)) : undefined,
-    poster: item.poster_url || undefined,
-  }));
+export function adaptAnimeList(raw: RawAnimeItemUnsafe[]): AdaptedAnimeCard[] {
+  return raw.map(item => {
+    const animeId = typeof item.anime_id === 'string' ? item.anime_id : (typeof item.id === 'string' ? item.id : '');
+    return {
+      id: animeId,
+      title: (item.russian && typeof item.russian === 'string') ? item.russian : (typeof item.english === 'string' ? item.english : 'Без названия'),
+      year: extractYear(item),
+      kind: normalizeKind(typeof item.kind === 'string' ? item.kind : undefined),
+      score: typeof item.score === 'number' ? Number(item.score.toFixed(2)) : undefined,
+      poster: typeof item.poster_url === 'string' ? item.poster_url : undefined,
+    };
+  }).filter(i => i.id);
 }
 
 export async function fetchAnimeList(limit = 30, page = 1): Promise<{ total: number; items: AdaptedAnimeCard[]; }> {
-  const data = await apiFetch<RawAnimeListResponse>(`/anime/get-anime-list?page=${page}&limit=${limit}`);
-  return {
-    total: data.total_count,
-    items: adaptAnimeList(data.anime_list || []),
-  };
+  const data = await apiFetch<GetAnimeListResponse>(`/anime/get-anime-list?page=${page}&limit=${limit}`);
+  if (!isRecord(data)) return { total: 0, items: [] };
+  const total = typeof data.total_count === 'number' ? data.total_count : 0;
+  const listRaw = isArray((data as any).anime_list) ? (data as any).anime_list as RawAnimeItemUnsafe[] : [];
+  return { total, items: adaptAnimeList(listRaw) };
 }
