@@ -1,6 +1,7 @@
 import React from 'react';
 import { AnimeSearchInput } from '@/features/anime/components/AnimeSearchInput';
 import { AnimeGrid } from '@/features/anime/components/AnimeGrid';
+import { AnimeGridQuery } from '@/features/anime/components/AnimeGridQuery';
 import { mockAnime } from '@/features/anime/data/mockAnime';
 import { AnimeFiltersBar } from '@/features/anime/components/AnimeFiltersBar';
 import { AnimeSortBlock } from '@/features/anime/components/AnimeSortBlock';
@@ -24,8 +25,8 @@ export default async function AnimeListPage() {
             <AnimeSearchInput />
             <AnimeFiltersBar />
           </div>
-          {/* Сетка */}
-          <AnimeGrid items={anime} />
+          {/* Сетка (гидрация + client refetch) */}
+          <AnimeGridQuery initial={anime} />
         </div>
         {/* Боковая панель */}
         <div className="shrink-0 w-full max-w-[288px]">

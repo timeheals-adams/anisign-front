@@ -3,6 +3,7 @@ import { Inter, Montserrat } from "next/font/google";
 import { cn } from "@/utils/cn";
 import { Navbar } from "@/components/server/Navbar";
 import { ReportBar } from "@/components/server/ReportBar";
+import { AppQueryProvider } from "@/lib/queryClient";
 import "./globals.css";
 
 const inter = Inter({ subsets: ["latin"], variable: "--font-inter" });
@@ -21,10 +22,12 @@ export default function RootLayout({
   return (
     <html lang="ru" className="dark">
   <body className={cn("text-base antialiased font-sans", inter.variable, montserrat.variable)}>
-  <Navbar />
-  <ReportBar />
-        {children}
-      </body>
+    <AppQueryProvider>
+      <Navbar />
+      <ReportBar />
+      {children}
+    </AppQueryProvider>
+  </body>
     </html>
   );
 }

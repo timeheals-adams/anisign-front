@@ -10,12 +10,13 @@ export interface AnimeCardProps {
   score?: number;
   poster?: string; // external url
   href?: string;
+  blurDataURL?: string; // tiny base64 placeholder
 }
 
-export function AnimeCard({ id, title, year, kind, score, poster, href }: AnimeCardProps) {
+export function AnimeCard({ id, title, year, kind, score, poster, href, blurDataURL }: AnimeCardProps) {
   const link = href || `/anime/${id}`;
   return (
-    <div className="group relative flex w-full flex-col gap-2" data-state="closed">
+  <div className="relative flex w-full flex-col gap-2 transition-opacity duration-200 ease-in-out group-hover:opacity-60 hover:!opacity-100" data-state="closed">
       <div
         data-radix-aspect-ratio-wrapper=""
         style={{ position: 'relative', width: '100%', paddingBottom: '142.857%' }}
@@ -35,7 +36,9 @@ export function AnimeCard({ id, title, year, kind, score, poster, href }: AnimeC
                 fill
                 sizes="(max-width: 768px) 50vw, (max-width:1200px) 25vw, 196px"
                 priority={false}
-                className="opacity-100 !transition size-full object-cover"
+                className="size-full object-cover transition-transform duration-300 scale-105 ease-out hover:scale-[1.15]"
+                placeholder={blurDataURL ? 'blur' : undefined}
+                blurDataURL={blurDataURL}
               />
             )}
             {typeof score === 'number' && (

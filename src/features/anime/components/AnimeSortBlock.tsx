@@ -3,7 +3,7 @@ import React from 'react';
 // Pure server component: exact markup & classes per provided design snippet.
 export function AnimeSortBlock() {
   return (
-    <div data-state="open" className="bg-[rgba(255,255,255,0.02)] border border-white/5 p-5 rounded-[14px] mb-3 group" style={{ opacity: 1, transform: 'none' }}>
+    <div data-state="open" className="bg-[rgba(200,199,202,0.02)] border border-white/5 p-5 rounded-[14px] mb-3 group" style={{ opacity: 1, transform: 'none' }}>
       <div className="flex items-center justify-between gap-2" style={{ opacity: 1 }}>
         <div className="flex items-center gap-2 cursor-pointer flex-1">
           <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="lucide lucide-chevron-down w-4 h-4 text-white/60"><path d="m6 9 6 6 6-6"></path></svg>
