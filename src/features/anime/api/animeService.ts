@@ -19,7 +19,6 @@ export interface AdaptedAnimeCard {
 }
 
 // Generic loose record without using 'any'.
-// eslint-disable-next-line @typescript-eslint/consistent-indexed-object-style
 interface RawAnimeItemUnsafe { [k: string]: unknown }
 
 function extractYear(item: RawAnimeItemUnsafe): number | undefined {

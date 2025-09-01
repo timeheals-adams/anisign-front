@@ -1,5 +1,5 @@
 "use client";
-import React, { useEffect, useState, useRef } from 'react';
+import React, { useEffect, useState, useRef, useMemo } from 'react';
 import { useQuery, useQueryClient } from '@tanstack/react-query';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { fetchAnimeList, type AdaptedAnimeCard } from '@/features/anime/api/animeService';
@@ -31,9 +31,11 @@ export function AnimeGridQuery({ initial, initialTotal = 0, page = 1, limit = 60
     placeholderData: (prev => prev ?? { items: initial, total: initialTotal }),
   });
 
-  const items = (data?.items && data.items.length > 0)
-    ? data.items
-    : (page === 1 ? initial : []);
+  const items = useMemo(() => {
+    return (data?.items && data.items.length > 0)
+      ? data.items
+      : (page === 1 ? initial : []);
+  }, [data?.items, page, initial]);
   const total = data?.total ?? initialTotal;
   const totalPages = total && limit ? Math.max(1, Math.ceil(total / limit)) : 1;
 

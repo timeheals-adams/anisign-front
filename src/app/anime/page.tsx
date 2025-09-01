@@ -1,6 +1,5 @@
 import React from 'react';
 import { AnimeSearchInput } from '@/features/anime/components/AnimeSearchInput';
-import { AnimeGrid } from '@/features/anime/components/AnimeGrid';
 import { AnimeGridQuery } from '@/features/anime/components/AnimeGridQuery';
 import { mockAnime } from '@/features/anime/data/mockAnime';
 import { AnimeFiltersBar } from '@/features/anime/components/AnimeFiltersBar';
@@ -9,9 +8,13 @@ import { fetchAnimeList } from '@/features/anime/api/animeService';
 
 export const revalidate = 300; // пример публичного кеша
 
-export default async function AnimeListPage({ searchParams }: { searchParams?: { page?: string } }) {
+// In Next.js 15 searchParams can be provided as a Promise in type defs; support both.
+export default async function AnimeListPage(
+  props: { searchParams?: Record<string, string | undefined> | Promise<Record<string, string | undefined>> }
+) {
+  const sp = props.searchParams instanceof Promise ? await props.searchParams : (props.searchParams || {});
   const limit = 24;
-  const page = Math.max(1, Number(searchParams?.page || '1') || 1);
+  const page = Math.max(1, Number(sp.page || '1') || 1);
   let anime = mockAnime;
   let total = 0;
   try {
