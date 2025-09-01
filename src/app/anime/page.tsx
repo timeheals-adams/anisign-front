@@ -10,9 +10,10 @@ export const revalidate = 300; // пример публичного кеша
 
 // In Next.js 15 searchParams can be provided as a Promise in type defs; support both.
 export default async function AnimeListPage(
-  props: { searchParams?: Record<string, string | undefined> | Promise<Record<string, string | undefined>> }
+  { searchParams }: { searchParams?: Promise<Record<string, string | undefined>> }
 ) {
-  const sp = props.searchParams instanceof Promise ? await props.searchParams : (props.searchParams || {});
+  // Next 15 can provide searchParams lazily as a Promise
+  const sp = searchParams ? await searchParams : {};
   const limit = 24;
   const page = Math.max(1, Number(sp.page || '1') || 1);
   let anime = mockAnime;
