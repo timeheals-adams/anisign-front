@@ -9,11 +9,15 @@ import { fetchAnimeList } from '@/features/anime/api/animeService';
 
 export const revalidate = 300; // пример публичного кеша
 
-export default async function AnimeListPage() {
+export default async function AnimeListPage({ searchParams }: { searchParams?: { page?: string } }) {
+  const limit = 24;
+  const page = Math.max(1, Number(searchParams?.page || '1') || 1);
   let anime = mockAnime;
+  let total = 0;
   try {
-    const { items } = await fetchAnimeList(60, 1);
+    const { items, total: totalCount } = await fetchAnimeList(limit, page);
     if (items.length) anime = items;
+    total = totalCount;
   } catch {
     // fallback already set
   }
@@ -26,7 +30,7 @@ export default async function AnimeListPage() {
             <AnimeFiltersBar />
           </div>
           {/* Сетка (гидрация + client refetch) */}
-          <AnimeGridQuery initial={anime} />
+          <AnimeGridQuery initial={anime} initialTotal={total} page={page} limit={limit} />
         </div>
         {/* Боковая панель */}
         <div className="shrink-0 w-full max-w-[288px]">
